@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "AzureDevOpsCodeReviewer": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:48459;http://localhost:48460"
+    }
+  }
+}

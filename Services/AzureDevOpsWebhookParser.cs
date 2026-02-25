@@ -5,7 +5,7 @@ namespace AzureDevOpsCodeReviewer.Services;
 
 public sealed class AzureDevOpsWebhookParser
 {
-    public bool TryParse(string body, out WebhookPayload payload, out string error)
+    public bool TryParsePayload(string body, out WebhookPayload payload, out string error)
     {
         payload = new WebhookPayload();
         error = string.Empty;

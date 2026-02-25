@@ -42,7 +42,7 @@ app.MapPost("/webhook", async (HttpRequest request,
 
     using var reader = new StreamReader(request.Body);
     var body = await reader.ReadToEndAsync();
-    if (!parser.TryParse(body, out var payload, out var error))
+    if (!parser.TryParsePayload(body, out var payload, out var error))
     {
         logger.LogWarning("Webhook parsing failed: {Error}", error);
         return Results.BadRequest(new { error });
@@ -53,6 +53,7 @@ app.MapPost("/webhook", async (HttpRequest request,
         return Results.Accepted();
     }
 
+    //TODO: check if the correct reviewer is assigned
     if (!orchestrator.IsTargetReviewer(payload.Reviewers))
     {
         return Results.Accepted();
