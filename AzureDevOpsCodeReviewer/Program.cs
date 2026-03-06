@@ -1,9 +1,11 @@
-﻿using AzureDevOpsCodeReviewer.Config;
+﻿using Azure.Monitor.OpenTelemetry.AspNetCore;
+using AzureDevOpsCodeReviewer.Config;
 using AzureDevOpsCodeReviewer.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using OpenTelemetry.Trace;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +14,14 @@ builder.Configuration
     .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true)
     .AddJsonFile("secrets.json", optional: true, reloadOnChange: true)
     .AddEnvironmentVariables();
+
+// Configure OpenTelemetry with Application Insights
+builder.Services.AddOpenTelemetry()
+    .WithTracing(tracingBuilder =>
+    {
+        tracingBuilder.AddAspNetCoreInstrumentation();
+    })
+    .UseAzureMonitor();
 
 builder.Services.Configure<AzureDevOpsOptions>(builder.Configuration.GetSection("AzureDevOps"));
 builder.Services.Configure<CopilotOptions>(builder.Configuration.GetSection("Copilot"));
