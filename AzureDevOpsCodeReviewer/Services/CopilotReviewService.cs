@@ -34,39 +34,74 @@ public sealed class CopilotReviewService : ICopilotReviewService, IAsyncDisposab
     {
         await EnsureStartedAsync();
 
-        await using var session = await _client.CreateSessionAsync(new SessionConfig
-        {
-            Model = _options.Model,
-            Streaming = false
-        });
+        _logger.LogDebug("Creating Copilot session for PR {PullRequestTitle} with model {Model}.",
+            pullRequest.Title, _options.Model);
 
-        var prompt = BuildPrompt(pullRequest, files);
-        var done = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var responses = new List<string>();
-
-        using var subscription = session.On(evt =>
+        CopilotSession session;
+        try
         {
-            switch (evt)
+            session = await _client.CreateSessionAsync(new SessionConfig
             {
-                case AssistantMessageEvent msg:
-                    responses.Add(msg.Data.Content ?? string.Empty);
-                    break;
-                case SessionIdleEvent:
-                    done.TrySetResult(true);
-                    break;
-            }
-        });
-
-        await session.SendAsync(new MessageOptions { Prompt = prompt });
-        await done.Task.WaitAsync(cancellationToken);
-
-        var combined = string.Join("\n", responses).Trim();
-        if (string.IsNullOrWhiteSpace(combined))
+                Model = _options.Model,
+                Streaming = false
+            });
+        }
+        catch (Exception ex)
         {
-            return Array.Empty<ReviewComment>();
+            _logger.LogError(ex, "Failed to create Copilot session for PR {PullRequestTitle} with model {Model}.",
+                pullRequest.Title, _options.Model);
+            throw;
         }
 
-        return ParseComments(combined);
+        await using (session)
+        {
+            var prompt = BuildPrompt(pullRequest, files);
+            var done = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var responses = new List<string>();
+
+            using var subscription = session.On(evt =>
+            {
+                switch (evt)
+                {
+                    case AssistantMessageEvent msg:
+                        responses.Add(msg.Data.Content ?? string.Empty);
+                        break;
+                    case SessionIdleEvent:
+                        done.TrySetResult(true);
+                        break;
+                }
+            });
+
+            _logger.LogDebug("Sending prompt to Copilot for PR {PullRequestTitle}.", pullRequest.Title);
+            await session.SendAsync(new MessageOptions { Prompt = prompt });
+
+            try
+            {
+                await done.Task.WaitAsync(cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogWarning("Copilot review was cancelled for PR {PullRequestTitle}.", pullRequest.Title);
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Copilot session failed while waiting for response for PR {PullRequestTitle}.",
+                    pullRequest.Title);
+                throw;
+            }
+
+            var combined = string.Join("\n", responses).Trim();
+            if (string.IsNullOrWhiteSpace(combined))
+            {
+                _logger.LogWarning("Copilot returned an empty response for PR {PullRequestTitle}.", pullRequest.Title);
+                return Array.Empty<ReviewComment>();
+            }
+
+            _logger.LogDebug("Copilot returned {CharCount} characters for PR {PullRequestTitle}.",
+                combined.Length, pullRequest.Title);
+            return ParseComments(combined);
+        }
     }
 
     public async ValueTask DisposeAsync()
@@ -84,8 +119,23 @@ public sealed class CopilotReviewService : ICopilotReviewService, IAsyncDisposab
             return;
         }
 
-        await _client.StartAsync();
-        _started = true;
+        var authMethod = string.IsNullOrWhiteSpace(_options.GitHubToken) ? "logged-in user" : "GitHub token";
+        var cliPath = string.IsNullOrWhiteSpace(_options.CliPath) ? "(default)" : _options.CliPath;
+        _logger.LogInformation("Starting Copilot SDK client. Auth: {AuthMethod}, CLI path: {CliPath}, Model: {Model}",
+            authMethod, cliPath, _options.Model);
+
+        try
+        {
+            await _client.StartAsync();
+            _started = true;
+            _logger.LogInformation("Copilot SDK client started successfully.");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to start Copilot SDK client. Auth: {AuthMethod}, CLI path: {CliPath}",
+                authMethod, cliPath);
+            throw;
+        }
     }
 
     private static string BuildPrompt(PullRequestInfo pullRequest, IReadOnlyList<FileSnapshot> files)

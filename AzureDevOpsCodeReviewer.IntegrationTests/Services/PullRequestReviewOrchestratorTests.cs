@@ -218,7 +218,7 @@ public sealed class PullRequestReviewOrchestratorIntegrationTests
         var orchestrator = BuildOrchestrator();
         var pullRequestId = 10702;
         var repositoryId = default(string);
-        var project = "SOFACore";
+        var project = "Framework en Tooling";
         var reviewers = new List<ReviewerInfo>
         {
             new() { UniqueName = "alice@example.com" },
