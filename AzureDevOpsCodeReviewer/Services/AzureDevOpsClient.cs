@@ -114,6 +114,24 @@ public sealed class AzureDevOpsClient : IAzureDevOpsClient
         await _gitClient.CreateThreadAsync(thread, _options.Project, repo, pullRequestId, cancellationToken: cancellationToken);
     }
 
+    public async Task CreateFileCommentAsync(int pullRequestId, string? repositoryId, string filePath, int lineNumber, string comment, CancellationToken cancellationToken)
+    {
+        var repo = ResolveRepositoryId(repositoryId);
+        var thread = new GitPullRequestCommentThread
+        {
+            Comments = [new Comment { Content = comment, CommentType = CommentType.Text }],
+            Status = CommentThreadStatus.Active,
+            ThreadContext = new CommentThreadContext
+            {
+                FilePath = filePath,
+                RightFileStart = new CommentPosition { Line = lineNumber, Offset = 1 },
+                RightFileEnd = new CommentPosition { Line = lineNumber, Offset = 1 }
+            }
+        };
+
+        await _gitClient.CreateThreadAsync(thread, _options.Project, repo, pullRequestId, cancellationToken: cancellationToken);
+    }
+
     private string ResolveRepositoryId(string? repositoryId) =>
         string.IsNullOrWhiteSpace(repositoryId) ? _options.RepositoryId : repositoryId;
 

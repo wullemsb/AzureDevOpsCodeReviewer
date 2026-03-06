@@ -105,8 +105,27 @@ public sealed class PullRequestReviewOrchestrator
                 return;
             }
 
-            var commentBody = FormatComments(pr, comments);
-            await _azureDevOps.CreateGeneralCommentAsync(pullRequestId, pr.RepositoryId, commentBody, cancellationToken);
+            var generalComments = comments.Where(c => c.IsGeneralComment).ToList();
+            var fileComments = comments.Where(c => !c.IsGeneralComment).ToList();
+
+            if (generalComments.Count > 0)
+            {
+                var commentBody = FormatGeneralComments(pr, generalComments);
+                await _azureDevOps.CreateGeneralCommentAsync(pullRequestId, pr.RepositoryId, commentBody, cancellationToken);
+            }
+
+            foreach (var comment in fileComments)
+            {
+                if (comment.LineNumber.HasValue)
+                {
+                    await _azureDevOps.CreateFileCommentAsync(pullRequestId, pr.RepositoryId, comment.Path, comment.LineNumber.Value, comment.Message, cancellationToken);
+                }
+                else
+                {
+                    var fileCommentBody = $"**{comment.Path}**\n\n{comment.Message}";
+                    await _azureDevOps.CreateGeneralCommentAsync(pullRequestId, pr.RepositoryId, fileCommentBody, cancellationToken);
+                }
+            }
         }
         catch (Exception ex)
         {
@@ -138,19 +157,23 @@ public sealed class PullRequestReviewOrchestrator
         return !string.IsNullOrWhiteSpace(value) && string.Equals(value, _reviewOptions.TargetReviewer, StringComparison.OrdinalIgnoreCase);
     }
 
-    private static string FormatComments(PullRequestInfo pullRequest, IReadOnlyList<ReviewComment> comments)
+    private static string FormatGeneralComments(PullRequestInfo pullRequest, IReadOnlyList<ReviewComment> comments)
     {
         var builder = new StringBuilder();
-        builder.AppendLine($"Copilot review for PR {pullRequest.PullRequestId}: {pullRequest.Title}");
+        builder.AppendLine($"**Copilot Review Summary for PR #{pullRequest.PullRequestId}**");
         if (!string.IsNullOrWhiteSpace(pullRequest.WebUrl))
         {
-            builder.AppendLine($"PR: {pullRequest.WebUrl}");
+            builder.AppendLine($"[{pullRequest.Title}]({pullRequest.WebUrl})");
+        }
+        else
+        {
+            builder.AppendLine(pullRequest.Title);
         }
 
         builder.AppendLine();
         foreach (var comment in comments)
         {
-            builder.AppendLine($"- {comment.Path}: {comment.Message}");
+            builder.AppendLine($"- {comment.Message}");
         }
 
         return builder.ToString().Trim();

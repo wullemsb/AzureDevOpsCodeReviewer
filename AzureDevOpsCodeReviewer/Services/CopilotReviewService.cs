@@ -92,8 +92,11 @@ public sealed class CopilotReviewService : ICopilotReviewService, IAsyncDisposab
     {
         var builder = new StringBuilder();
         builder.AppendLine("You are reviewing a pull request for potential issues. Focus on correctness, security, performance, and edge cases.");
-        builder.AppendLine("Return JSON only: an array of objects with properties 'path' and 'message'.");
-        builder.AppendLine("If there are no issues worth commenting, return an empty array [].");
+        builder.AppendLine("Return JSON only with two arrays:");
+        builder.AppendLine("1. 'overallComments': array of strings for general PR-level feedback");
+        builder.AppendLine("2. 'fileComments': array of objects with 'path' (string), 'line' (number), and 'message' (string) for specific code issues");
+        builder.AppendLine("Example: {\"overallComments\": [\"Good test coverage\"], \"fileComments\": [{\"path\": \"file.cs\", \"line\": 42, \"message\": \"Null check needed\"}]}");
+        builder.AppendLine("If there are no issues, return {\"overallComments\": [], \"fileComments\": []}");
         builder.AppendLine();
         builder.AppendLine($"PR: {pullRequest.Title}");
         builder.AppendLine($"Source: {pullRequest.SourceRefName}");
@@ -116,22 +119,42 @@ public sealed class CopilotReviewService : ICopilotReviewService, IAsyncDisposab
         try
         {
             using var doc = JsonDocument.Parse(content);
-            if (doc.RootElement.ValueKind != JsonValueKind.Array)
+            if (doc.RootElement.ValueKind != JsonValueKind.Object)
             {
                 return new[] { new ReviewComment { Path = "(general)", Message = content } };
             }
 
             var results = new List<ReviewComment>();
-            foreach (var item in doc.RootElement.EnumerateArray())
-            {
-                var path = item.TryGetProperty("path", out var pathElement) ? pathElement.GetString() ?? "(general)" : "(general)";
-                var message = item.TryGetProperty("message", out var messageElement) ? messageElement.GetString() ?? string.Empty : string.Empty;
-                if (string.IsNullOrWhiteSpace(message))
-                {
-                    continue;
-                }
 
-                results.Add(new ReviewComment { Path = path, Message = message.Trim() });
+            if (doc.RootElement.TryGetProperty("overallComments", out var overallArray) && overallArray.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var item in overallArray.EnumerateArray())
+                {
+                    var message = item.GetString();
+                    if (!string.IsNullOrWhiteSpace(message))
+                    {
+                        results.Add(new ReviewComment { Path = "(general)", Message = message.Trim() });
+                    }
+                }
+            }
+
+            if (doc.RootElement.TryGetProperty("fileComments", out var fileArray) && fileArray.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var item in fileArray.EnumerateArray())
+                {
+                    var path = item.TryGetProperty("path", out var pathElement) ? pathElement.GetString() ?? string.Empty : string.Empty;
+                    var message = item.TryGetProperty("message", out var messageElement) ? messageElement.GetString() ?? string.Empty : string.Empty;
+                    var line = item.TryGetProperty("line", out var lineElement) && lineElement.ValueKind == JsonValueKind.Number
+                        ? lineElement.GetInt32()
+                        : (int?)null;
+
+                    if (string.IsNullOrWhiteSpace(message))
+                    {
+                        continue;
+                    }
+
+                    results.Add(new ReviewComment { Path = path, Message = message.Trim(), LineNumber = line });
+                }
             }
 
             return results;
