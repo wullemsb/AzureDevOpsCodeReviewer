@@ -114,11 +114,34 @@ public sealed class CopilotReviewService : ICopilotReviewService, IAsyncDisposab
         return builder.ToString();
     }
 
+    private static string ExtractJson(string content)
+    {
+        var trimmed = content.Trim();
+
+        // Strip markdown code fences (```json ... ``` or ``` ... ```)
+        if (trimmed.StartsWith("```", StringComparison.Ordinal))
+        {
+            var firstNewline = trimmed.IndexOf('\n');
+            if (firstNewline >= 0)
+            {
+                trimmed = trimmed[(firstNewline + 1)..].TrimStart();
+            }
+        }
+
+        if (trimmed.EndsWith("```", StringComparison.Ordinal))
+        {
+            trimmed = trimmed[..^3].TrimEnd();
+        }
+
+        return trimmed;
+    }
+
     private IReadOnlyList<ReviewComment> ParseComments(string content)
     {
         try
         {
-            using var doc = JsonDocument.Parse(content);
+            var json = ExtractJson(content);
+            using var doc = JsonDocument.Parse(json);
             if (doc.RootElement.ValueKind != JsonValueKind.Object)
             {
                 return new[] { new ReviewComment { Path = "(general)", Message = content } };

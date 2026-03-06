@@ -117,3 +117,4 @@ appsettings.Production.json
 /secrets.json
 /AzureDevOpsCodeReviewer.IntegrationTests/secrets.json
 /AzureDevOpsCodeReviewer/secrets.json
+/AzureDevOpsCodeReviewer/Properties/PublishProfiles/Development.pubxml
