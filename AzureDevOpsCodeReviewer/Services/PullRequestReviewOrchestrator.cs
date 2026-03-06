@@ -9,8 +9,8 @@ namespace AzureDevOpsCodeReviewer.Services;
 
 public sealed class PullRequestReviewOrchestrator
 {
-    private readonly AzureDevOpsClient _azureDevOps;
-    private readonly CopilotReviewService _copilot;
+    private readonly IAzureDevOpsClient _azureDevOps;
+    private readonly ICopilotReviewService _copilot;
     private readonly AzureDevOpsOptions _adoOptions;
     private readonly ReviewOptions _reviewOptions;
     private readonly ILogger<PullRequestReviewOrchestrator> _logger;
@@ -18,8 +18,8 @@ public sealed class PullRequestReviewOrchestrator
     private readonly SemaphoreSlim _semaphore = new(1, 1);
 
     public PullRequestReviewOrchestrator(
-        AzureDevOpsClient azureDevOps,
-        CopilotReviewService copilot,
+        IAzureDevOpsClient azureDevOps,
+        ICopilotReviewService copilot,
         IOptions<AzureDevOpsOptions> adoOptions,
         IOptions<ReviewOptions> reviewOptions,
         ILogger<PullRequestReviewOrchestrator> logger)
@@ -38,7 +38,7 @@ public sealed class PullRequestReviewOrchestrator
 
     public bool IsTargetReviewer(IReadOnlyList<ReviewerInfo> reviewers)
     {
-        if (string.IsNullOrWhiteSpace(_adoOptions.TargetReviewer))
+        if (string.IsNullOrWhiteSpace(_reviewOptions.TargetReviewer))
         {
             return false;
         }
@@ -135,13 +135,13 @@ public sealed class PullRequestReviewOrchestrator
 
     private bool MatchesTarget(string value)
     {
-        return !string.IsNullOrWhiteSpace(value) && string.Equals(value, _adoOptions.TargetReviewer, StringComparison.OrdinalIgnoreCase);
+        return !string.IsNullOrWhiteSpace(value) && string.Equals(value, _reviewOptions.TargetReviewer, StringComparison.OrdinalIgnoreCase);
     }
 
     private static string FormatComments(PullRequestInfo pullRequest, IReadOnlyList<ReviewComment> comments)
     {
         var builder = new StringBuilder();
-        builder.AppendLine($"Copilot review for PR #{pullRequest.PullRequestId}: {pullRequest.Title}");
+        builder.AppendLine($"Copilot review for PR {pullRequest.PullRequestId}: {pullRequest.Title}");
         if (!string.IsNullOrWhiteSpace(pullRequest.WebUrl))
         {
             builder.AppendLine($"PR: {pullRequest.WebUrl}");

@@ -10,6 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Configuration
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
     .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true)
+    .AddJsonFile("secrets.json", optional: true, reloadOnChange: true)
     .AddEnvironmentVariables();
 
 builder.Services.Configure<AzureDevOpsOptions>(builder.Configuration.GetSection("AzureDevOps"));
@@ -17,10 +18,10 @@ builder.Services.Configure<CopilotOptions>(builder.Configuration.GetSection("Cop
 builder.Services.Configure<ReviewOptions>(builder.Configuration.GetSection("Review"));
 builder.Services.Configure<WebhookOptions>(builder.Configuration.GetSection("Webhook"));
 
-builder.Services.AddHttpClient<AzureDevOpsClient>();
+builder.Services.AddSingleton<IAzureDevOpsClient, AzureDevOpsClient>();
 builder.Services.AddSingleton<AzureDevOpsWebhookParser>();
 builder.Services.AddSingleton<WebhookRequestGuard>();
-builder.Services.AddSingleton<CopilotReviewService>();
+builder.Services.AddSingleton<ICopilotReviewService, CopilotReviewService>();
 builder.Services.AddSingleton<PullRequestReviewOrchestrator>();
 
 var app = builder.Build();
