@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 
 namespace AzureDevOpsCodeReviewer.Services;
 
-public sealed class CopilotReviewService : IAsyncDisposable
+public sealed class CopilotReviewService : ICopilotReviewService, IAsyncDisposable
 {
     private readonly CopilotClient _client;
     private readonly CopilotOptions _options;

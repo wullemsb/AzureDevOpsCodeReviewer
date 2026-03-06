@@ -114,3 +114,6 @@ Thumbs.db
 # Application specific
 appsettings.Development.json
 appsettings.Production.json
+/secrets.json
+/AzureDevOpsCodeReviewer.IntegrationTests/secrets.json
+/AzureDevOpsCodeReviewer/secrets.json
