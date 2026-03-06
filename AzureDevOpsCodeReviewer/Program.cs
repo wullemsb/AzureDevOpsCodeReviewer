@@ -70,7 +70,7 @@ app.MapPost("/webhook", async (HttpRequest request,
         return Results.Accepted();
     }
 
-    _ = Task.Run(() => orchestrator.ReviewAndCommentAsync(payload.PullRequestId, payload.RepositoryId, CancellationToken.None));
+    _ = Task.Run(() => orchestrator.ReviewAndCommentAsync(payload.PullRequestId,payload.ProjectName, payload.RepositoryId, CancellationToken.None));
     logger.LogInformation("Queued review for PR {PullRequestId}", payload.PullRequestId);
     return Results.Accepted();
 });

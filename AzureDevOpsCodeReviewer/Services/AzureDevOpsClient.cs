@@ -28,10 +28,10 @@ public sealed class AzureDevOpsClient : IAzureDevOpsClient
         _gitClient = connection.GetClient<GitHttpClient>();
     }
 
-    public async Task<PullRequestInfo> GetPullRequestAsync(int pullRequestId, string? repositoryId, CancellationToken cancellationToken)
+    public async Task<PullRequestInfo> GetPullRequestAsync(int pullRequestId, string project, string? repositoryId, CancellationToken cancellationToken)
     {
         var repo = ResolveRepositoryId(repositoryId);
-        var pr = await _gitClient.GetPullRequestAsync(_options.Project, repo, pullRequestId, cancellationToken: cancellationToken);
+        var pr = await _gitClient.GetPullRequestAsync(project, repo, pullRequestId, cancellationToken: cancellationToken);
 
         var webUrl = string.Empty;
         if (pr.Links?.Links != null && pr.Links.Links.TryGetValue("web", out var webLink))
@@ -72,7 +72,7 @@ public sealed class AzureDevOpsClient : IAzureDevOpsClient
             .ToList();
     }
 
-    public async Task<string?> GetFileContentAsync(string repositoryId, string path, string sourceRefName, CancellationToken cancellationToken)
+    public async Task<string?> GetFileContentAsync(string project, string repositoryId, string path, string sourceRefName, CancellationToken cancellationToken)
     {
         var repo = ResolveRepositoryId(repositoryId);
         var branch = NormalizeBranchName(sourceRefName);
@@ -91,7 +91,7 @@ public sealed class AzureDevOpsClient : IAzureDevOpsClient
             };
 
             using var stream = await _gitClient.GetItemContentAsync(
-                _options.Project, repo, path, (string?)null, versionDescriptor: versionDescriptor, cancellationToken: cancellationToken);
+                project, repo, path, (string?)null, versionDescriptor: versionDescriptor, cancellationToken: cancellationToken);
             using var reader = new StreamReader(stream);
             return await reader.ReadToEndAsync(cancellationToken);
         }
@@ -102,7 +102,7 @@ public sealed class AzureDevOpsClient : IAzureDevOpsClient
         }
     }
 
-    public async Task CreateGeneralCommentAsync(int pullRequestId, string? repositoryId, string comment, CancellationToken cancellationToken)
+    public async Task CreateGeneralCommentAsync(int pullRequestId,string project, string? repositoryId, string comment, CancellationToken cancellationToken)
     {
         var repo = ResolveRepositoryId(repositoryId);
         var thread = new GitPullRequestCommentThread
@@ -111,10 +111,10 @@ public sealed class AzureDevOpsClient : IAzureDevOpsClient
             Status = CommentThreadStatus.Active
         };
 
-        await _gitClient.CreateThreadAsync(thread, _options.Project, repo, pullRequestId, cancellationToken: cancellationToken);
+        await _gitClient.CreateThreadAsync(thread, project, repo, pullRequestId, cancellationToken: cancellationToken);
     }
 
-    public async Task CreateFileCommentAsync(int pullRequestId, string? repositoryId, string filePath, int lineNumber, string comment, CancellationToken cancellationToken)
+    public async Task CreateFileCommentAsync(int pullRequestId, string project, string? repositoryId, string filePath, int lineNumber, string comment, CancellationToken cancellationToken)
     {
         var repo = ResolveRepositoryId(repositoryId);
         var thread = new GitPullRequestCommentThread
@@ -129,7 +129,7 @@ public sealed class AzureDevOpsClient : IAzureDevOpsClient
             }
         };
 
-        await _gitClient.CreateThreadAsync(thread, _options.Project, repo, pullRequestId, cancellationToken: cancellationToken);
+        await _gitClient.CreateThreadAsync(thread, project, repo, pullRequestId, cancellationToken: cancellationToken);
     }
 
     private string ResolveRepositoryId(string? repositoryId) =>

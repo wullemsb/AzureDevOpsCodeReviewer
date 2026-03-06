@@ -218,6 +218,7 @@ public sealed class PullRequestReviewOrchestratorIntegrationTests
         var orchestrator = BuildOrchestrator();
         var pullRequestId = 10702;
         var repositoryId = default(string);
+        var project = "SOFACore";
         var reviewers = new List<ReviewerInfo>
         {
             new() { UniqueName = "alice@example.com" },
@@ -225,7 +226,7 @@ public sealed class PullRequestReviewOrchestratorIntegrationTests
             new() { UniqueName = DefaultTargetReviewer }
         };
 
-        await orchestrator.ReviewAndCommentAsync(pullRequestId, repositoryId, CancellationToken.None);
+        await orchestrator.ReviewAndCommentAsync(pullRequestId, project,repositoryId, CancellationToken.None);
     }
 
 }

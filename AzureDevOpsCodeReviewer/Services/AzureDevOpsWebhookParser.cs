@@ -48,9 +48,21 @@ public sealed class AzureDevOpsWebhookParser
             }
 
             var repoId = string.Empty;
-            if (resource.TryGetProperty("repository", out var repo) && repo.TryGetProperty("id", out var repoIdElement))
+            var projectId = string.Empty;
+            var projectName = string.Empty;
+            if (resource.TryGetProperty("repository", out var repo))
             {
-                repoId = repoIdElement.GetString() ?? string.Empty;
+                if (repo.TryGetProperty("id", out var repoIdElement))
+                    repoId = repoIdElement.GetString() ?? string.Empty;
+
+                if (repo.TryGetProperty("project", out var project))
+                {
+                    if (project.TryGetProperty("id", out var projIdElement))
+                        projectId = projIdElement.GetString() ?? string.Empty;
+
+                    if (project.TryGetProperty("name", out var projNameElement))
+                        projectName = projNameElement.GetString() ?? string.Empty;
+                }
             }
 
             var reviewers = new List<ReviewerInfo>();
@@ -72,6 +84,8 @@ public sealed class AzureDevOpsWebhookParser
                 EventType = eventType,
                 PullRequestId = prId,
                 RepositoryId = repoId,
+                ProjectId = projectId,
+                ProjectName = projectName,
                 Reviewers = reviewers
             };
 

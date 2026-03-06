@@ -54,7 +54,7 @@ public sealed class PullRequestReviewOrchestrator
         return false;
     }
 
-    public async Task ReviewAndCommentAsync(int pullRequestId, string? repositoryId, CancellationToken cancellationToken)
+    public async Task ReviewAndCommentAsync(int pullRequestId, string project, string? repositoryId, CancellationToken cancellationToken)
     {
         if (!TryEnterCooldown(pullRequestId))
         {
@@ -65,13 +65,13 @@ public sealed class PullRequestReviewOrchestrator
         await _semaphore.WaitAsync(cancellationToken);
         try
         {
-            var pr = await _azureDevOps.GetPullRequestAsync(pullRequestId, repositoryId, cancellationToken);
+            var pr = await _azureDevOps.GetPullRequestAsync(pullRequestId,project, repositoryId, cancellationToken);
             var files = await _azureDevOps.GetPullRequestFilesAsync(pullRequestId, pr.RepositoryId, cancellationToken);
 
             var snapshots = new List<FileSnapshot>();
             foreach (var filePath in files.Take(_reviewOptions.MaxFiles))
             {
-                var content = await _azureDevOps.GetFileContentAsync(pr.RepositoryId, filePath, pr.SourceRefName, cancellationToken);
+                var content = await _azureDevOps.GetFileContentAsync(project, pr.RepositoryId, filePath, pr.SourceRefName, cancellationToken);
                 if (string.IsNullOrWhiteSpace(content))
                 {
                     continue;
@@ -111,19 +111,19 @@ public sealed class PullRequestReviewOrchestrator
             if (generalComments.Count > 0)
             {
                 var commentBody = FormatGeneralComments(pr, generalComments);
-                await _azureDevOps.CreateGeneralCommentAsync(pullRequestId, pr.RepositoryId, commentBody, cancellationToken);
+                await _azureDevOps.CreateGeneralCommentAsync(pullRequestId,project, pr.RepositoryId, commentBody, cancellationToken);
             }
 
             foreach (var comment in fileComments)
             {
                 if (comment.LineNumber.HasValue)
                 {
-                    await _azureDevOps.CreateFileCommentAsync(pullRequestId, pr.RepositoryId, comment.Path, comment.LineNumber.Value, comment.Message, cancellationToken);
+                    await _azureDevOps.CreateFileCommentAsync(pullRequestId,project, pr.RepositoryId, comment.Path, comment.LineNumber.Value, comment.Message, cancellationToken);
                 }
                 else
                 {
                     var fileCommentBody = $"**{comment.Path}**\n\n{comment.Message}";
-                    await _azureDevOps.CreateGeneralCommentAsync(pullRequestId, pr.RepositoryId, fileCommentBody, cancellationToken);
+                    await _azureDevOps.CreateGeneralCommentAsync(pullRequestId,project, pr.RepositoryId, fileCommentBody, cancellationToken);
                 }
             }
         }
