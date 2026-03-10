@@ -1,10 +1,8 @@
 ﻿using Azure.Monitor.OpenTelemetry.AspNetCore;
-using AzureDevOpsCodeReviewer.Config;
 using AzureDevOpsCodeReviewer.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using OpenTelemetry.Trace;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,30 +21,28 @@ builder.Services.AddOpenTelemetry()
     })
     .UseAzureMonitor();
 
-builder.Services.Configure<AzureDevOpsOptions>(builder.Configuration.GetSection("AzureDevOps"));
-builder.Services.Configure<CopilotOptions>(builder.Configuration.GetSection("Copilot"));
-builder.Services.Configure<ReviewOptions>(builder.Configuration.GetSection("Review"));
-builder.Services.Configure<WebhookOptions>(builder.Configuration.GetSection("Webhook"));
-
-builder.Services.AddSingleton<IAzureDevOpsClient, AzureDevOpsClient>();
 builder.Services.AddSingleton<AzureDevOpsWebhookParser>();
-builder.Services.AddSingleton<WebhookRequestGuard>();
-builder.Services.AddSingleton<ICopilotReviewService, CopilotReviewService>();
-builder.Services.AddSingleton<PullRequestReviewOrchestrator>();
+builder.Services.AddSingleton<ProjectRegistry>();
 
 var app = builder.Build();
 
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 
-app.MapPost("/webhook", async (HttpRequest request,
+app.MapPost("/webhook/{projectKey}", async (string projectKey,
+    HttpRequest request,
+    ProjectRegistry registry,
     AzureDevOpsWebhookParser parser,
-    WebhookRequestGuard guard,
-    PullRequestReviewOrchestrator orchestrator,
-    IOptions<AzureDevOpsOptions> adoOptions,
     ILoggerFactory loggerFactory) =>
 {
     var logger = loggerFactory.CreateLogger("Webhook");
-    if (!guard.IsAuthorized(request))
+
+    if (!registry.TryGetProject(projectKey, out var project))
+    {
+        logger.LogWarning("Unknown project key: {ProjectKey}", projectKey);
+        return Results.NotFound();
+    }
+
+    if (!project.Guard.IsAuthorized(request))
     {
         return Results.Unauthorized();
     }
@@ -59,19 +55,19 @@ app.MapPost("/webhook", async (HttpRequest request,
         return Results.BadRequest(new { error });
     }
 
-    if (!orchestrator.IsAllowedEvent(payload.EventType))
+    if (!project.Orchestrator.IsAllowedEvent(payload.EventType))
     {
         return Results.Accepted();
     }
 
     //TODO: check if the correct reviewer is assigned
-    if (!orchestrator.IsTargetReviewer(payload.Reviewers))
+    if (!project.Orchestrator.IsTargetReviewer(payload.Reviewers))
     {
         return Results.Accepted();
     }
 
-    _ = Task.Run(() => orchestrator.ReviewAndCommentAsync(payload.PullRequestId,payload.ProjectName, payload.RepositoryId, CancellationToken.None));
-    logger.LogInformation("Queued review for PR {PullRequestId}", payload.PullRequestId);
+    _ = Task.Run(() => project.Orchestrator.ReviewAndCommentAsync(payload.PullRequestId, payload.ProjectName, payload.RepositoryId, CancellationToken.None));
+    logger.LogInformation("Queued review for PR {PullRequestId} (project: {ProjectKey})", payload.PullRequestId, projectKey);
     return Results.Accepted();
 });
 
