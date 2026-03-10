@@ -1,30 +1,42 @@
 using AzureDevOpsCodeReviewer.Config;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace AzureDevOpsCodeReviewer.Services;
 
 public sealed class ProjectRegistry : IAsyncDisposable
 {
-    private readonly IReadOnlyDictionary<string, ProjectServiceContainer> _projects;
+    private readonly Dictionary<string, ProjectServiceContainer> _projects = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ILoggerFactory _loggerFactory;
 
-    public ProjectRegistry(IConfiguration configuration, ILoggerFactory loggerFactory)
+    public ProjectRegistry(IProjectConfigStore configStore, ILoggerFactory loggerFactory)
     {
-        var projects = new Dictionary<string, ProjectServiceContainer>(StringComparer.OrdinalIgnoreCase);
+        _loggerFactory = loggerFactory;
 
-        foreach (var child in configuration.GetSection("Projects").GetChildren())
+        foreach (var (key, options) in configStore.GetAll())
         {
-            var options = child.Get<ProjectOptions>() ?? new ProjectOptions();
-            projects[child.Key] = new ProjectServiceContainer(options, loggerFactory);
+            _projects[key] = new ProjectServiceContainer(options, loggerFactory);
         }
-
-        _projects = projects;
     }
 
     public IEnumerable<string> ProjectKeys => _projects.Keys;
 
     public bool TryGetProject(string key, [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out ProjectServiceContainer? container)
         => _projects.TryGetValue(key, out container);
+
+    public async Task ReloadAsync(IProjectConfigStore configStore)
+    {
+        foreach (var container in _projects.Values)
+        {
+            await container.DisposeAsync();
+        }
+
+        _projects.Clear();
+
+        foreach (var (key, options) in configStore.GetAll())
+        {
+            _projects[key] = new ProjectServiceContainer(options, _loggerFactory);
+        }
+    }
 
     public async ValueTask DisposeAsync()
     {

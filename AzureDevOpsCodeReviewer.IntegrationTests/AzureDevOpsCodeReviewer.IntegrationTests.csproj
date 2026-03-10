@@ -43,4 +43,10 @@
     <ProjectReference Include="..\AzureDevOpsCodeReviewer\AzureDevOpsCodeReviewer.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="projects.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

@@ -21,10 +21,22 @@ builder.Services.AddOpenTelemetry()
     })
     .UseAzureMonitor();
 
+// Project configuration store (JSON file-based persistence)
+var projectsFilePath = Path.Combine(builder.Environment.ContentRootPath, "projects.json");
+builder.Services.AddSingleton<IProjectConfigStore>(new JsonProjectConfigStore(projectsFilePath));
+
 builder.Services.AddSingleton<AzureDevOpsWebhookParser>();
 builder.Services.AddSingleton<ProjectRegistry>();
 
+// Add Razor Pages
+builder.Services.AddRazorPages();
+builder.Services.AddAntiforgery();
+
 var app = builder.Build();
+
+app.UseStaticFiles();
+app.UseRouting();
+app.UseAntiforgery();
 
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 
@@ -70,5 +82,7 @@ app.MapPost("/webhook/{projectKey}", async (string projectKey,
     logger.LogInformation("Queued review for PR {PullRequestId} (project: {ProjectKey})", payload.PullRequestId, projectKey);
     return Results.Accepted();
 });
+
+app.MapRazorPages();
 
 app.Run();

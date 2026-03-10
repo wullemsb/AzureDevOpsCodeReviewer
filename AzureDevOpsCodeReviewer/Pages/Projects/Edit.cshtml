@@ -1,0 +1,36 @@
+@page "{key}"
+@model AzureDevOpsCodeReviewer.Pages.Projects.EditModel
+@{
+    ViewData["Title"] = $"Edit — {Model.Key}";
+}
+
+<div class="mb-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-page="Index">Projects</a></li>
+            <li class="breadcrumb-item active">Edit: @Model.Key</li>
+        </ol>
+    </nav>
+    <h2>Edit Project <span class="badge bg-dark badge-key">@Model.Key</span></h2>
+    <p class="text-muted">Webhook URL: <code>/webhook/@Model.Key</code></p>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="post">
+            <input type="hidden" asp-for="Key" />
+
+            <partial name="_ProjectForm" model="Model.Options" />
+
+            <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-lg me-1" viewBox="0 0 16 16">
+                        <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022Z"/>
+                    </svg>
+                    Save Changes
+                </button>
+                <a asp-page="Index" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>

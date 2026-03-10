@@ -43,7 +43,8 @@ public sealed class PullRequestReviewOrchestratorIntegrationTests
         var configuration = new ConfigurationBuilder()
             .SetBasePath(AppContext.BaseDirectory)
             .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
-             .AddJsonFile("secrets.json", optional: true, reloadOnChange: true)
+            .AddJsonFile("projects.json", optional: true, reloadOnChange: false)
+            .AddJsonFile("secrets.json", optional: true, reloadOnChange: true)
             .Build();
 
         var projectSection = configuration.GetSection($"Projects:{projectKey}");

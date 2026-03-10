@@ -1,0 +1,108 @@
+@model AzureDevOpsCodeReviewer.Config.ProjectOptions
+
+<div class="form-section">
+    <h5>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cloud me-1" viewBox="0 0 16 16">
+            <path d="M4.406 3.342A5.53 5.53 0 0 1 8 2c2.69 0 4.923 2 5.166 4.579C14.758 6.804 16 8.137 16 9.773 16 11.569 14.502 13 12.687 13H3.781C1.708 13 0 11.366 0 9.318c0-1.763 1.266-3.223 2.942-3.593.143-.863.698-1.723 1.464-2.383z"/>
+        </svg>
+        Azure DevOps
+    </h5>
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label asp-for="AzureDevOps.Organization" class="form-label">Organization</label>
+            <input asp-for="AzureDevOps.Organization" class="form-control" placeholder="e.g. DefaultCollection" />
+            <span asp-validation-for="AzureDevOps.Organization" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="AzureDevOps.RepositoryId" class="form-label">Repository ID</label>
+            <input asp-for="AzureDevOps.RepositoryId" class="form-control" placeholder="e.g. my-repo-guid" />
+            <span asp-validation-for="AzureDevOps.RepositoryId" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="AzureDevOps.BaseUrl" class="form-label">Base URL</label>
+            <input asp-for="AzureDevOps.BaseUrl" class="form-control" placeholder="https://dev.azure.com" />
+        </div>
+        <div class="col-md-6">
+            <label asp-for="AzureDevOps.Pat" class="form-label">Personal Access Token</label>
+            <input asp-for="AzureDevOps.Pat" type="password" class="form-control" placeholder="PAT" />
+        </div>
+    </div>
+</div>
+
+<div class="form-section">
+    <h5>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-robot me-1" viewBox="0 0 16 16">
+            <path d="M6 12.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5ZM3 8.062C3 6.76 4.235 5.765 5.53 5.886a26.58 26.58 0 0 0 4.94 0C11.765 5.765 13 6.76 13 8.062v1.157a.933.933 0 0 1-.765.935c-.845.147-2.34.346-4.235.346-1.895 0-3.39-.2-4.235-.346A.933.933 0 0 1 3 9.219V8.062Zm4.542-.827a.25.25 0 0 0-.217.068l-.92.9a25.11 25.11 0 0 1-1.871-.183.25.25 0 0 0-.068.495c.55.076 1.232.149 2.02.193a.25.25 0 0 0 .189-.071l.754-.736.847 1.71a.25.25 0 0 0 .404.062l.932-.97a25.286 25.286 0 0 0 1.922-.188.25.25 0 0 0-.068-.495c-.538.074-1.207.145-1.98.189a.25.25 0 0 0-.166.076l-.754.785-.842-1.7a.25.25 0 0 0-.182-.135Z"/>
+            <path d="M8.5 1.866a1 1 0 1 0-1 0V3h-2A4.5 4.5 0 0 0 1 7.5V8a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1v1a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-1a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1v-.5A4.5 4.5 0 0 0 10.5 3h-2V1.866ZM14 7.5V13a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V7.5A3.5 3.5 0 0 1 5.5 4h5A3.5 3.5 0 0 1 14 7.5Z"/>
+        </svg>
+        Copilot
+    </h5>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <label asp-for="Copilot.Model" class="form-label">Model</label>
+            <input asp-for="Copilot.Model" class="form-control" placeholder="gpt-5" />
+        </div>
+        <div class="col-md-4">
+            <label asp-for="Copilot.GitHubToken" class="form-label">GitHub Token</label>
+            <input asp-for="Copilot.GitHubToken" type="password" class="form-control" placeholder="github_pat_..." />
+        </div>
+        <div class="col-md-4">
+            <label asp-for="Copilot.CliPath" class="form-label">CLI Path</label>
+            <input asp-for="Copilot.CliPath" class="form-control" placeholder="(optional)" />
+        </div>
+    </div>
+</div>
+
+<div class="form-section">
+    <h5>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sliders me-1" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M11.5 2a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM9.05 3a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0V3h9.05zM4.5 7a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM2.05 8a2.5 2.5 0 0 1 4.9 0H16v1H6.95a2.5 2.5 0 0 1-4.9 0H0V8h2.05zm9.45 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm-2.45 1a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0v-1h9.05z"/>
+        </svg>
+        Review Settings
+    </h5>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <label asp-for="Review.MaxFiles" class="form-label">Max Files</label>
+            <input asp-for="Review.MaxFiles" type="number" class="form-control" />
+        </div>
+        <div class="col-md-4">
+            <label asp-for="Review.MaxFileSizeBytes" class="form-label">Max File Size (bytes)</label>
+            <input asp-for="Review.MaxFileSizeBytes" type="number" class="form-control" />
+        </div>
+        <div class="col-md-4">
+            <label asp-for="Review.ReviewCooldownMinutes" class="form-label">Cooldown (minutes)</label>
+            <input asp-for="Review.ReviewCooldownMinutes" type="number" class="form-control" />
+        </div>
+        <div class="col-md-6">
+            <label asp-for="Review.TargetReviewer" class="form-label">Target Reviewer</label>
+            <input asp-for="Review.TargetReviewer" class="form-control" placeholder="e.g. domain\\user" />
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Allowed Events</label>
+            <input name="AllowedEventsText" class="form-control"
+                   value="@(string.Join(", ", Model?.Review?.AllowedEvents ?? Array.Empty<string>()))"
+                   placeholder="git.pullrequest.created, git.pullrequest.updated" />
+            <small class="text-muted">Comma-separated list of event types</small>
+        </div>
+    </div>
+</div>
+
+<div class="form-section">
+    <h5>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-link-45deg me-1" viewBox="0 0 16 16">
+            <path d="M4.715 6.542 3.343 7.914a3 3 0 1 0 4.243 4.243l1.828-1.829A3 3 0 0 0 8.586 5.5L8 6.086a1.002 1.002 0 0 0-.154.199 2 2 0 0 1 .861 3.337L6.88 11.45a2 2 0 1 1-2.83-2.83l.793-.792a4.018 4.018 0 0 1-.128-1.287z"/>
+            <path d="M6.586 4.672A3 3 0 0 0 7.414 9.5l.775-.776a2 2 0 0 1-.896-3.346L9.12 3.55a2 2 0 1 1 2.83 2.83l-.793.792c.112.42.155.855.128 1.287l1.372-1.372a3 3 0 1 0-4.243-4.243L6.586 4.672z"/>
+        </svg>
+        Webhook
+    </h5>
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label asp-for="Webhook.Token" class="form-label">Token</label>
+            <input asp-for="Webhook.Token" type="password" class="form-control" placeholder="Shared secret" />
+        </div>
+        <div class="col-md-6">
+            <label asp-for="Webhook.TokenHeaderName" class="form-label">Token Header Name</label>
+            <input asp-for="Webhook.TokenHeaderName" class="form-control" placeholder="X-Webhook-Token" />
+        </div>
+    </div>
+</div>

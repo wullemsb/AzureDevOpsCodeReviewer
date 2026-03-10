@@ -1,0 +1,31 @@
+{
+  "Projects": {
+    "test": {
+      "AzureDevOps": {
+        "Organization": "DefaultCollection",
+        "RepositoryId": "SOFACore",
+        "Pat": "PAT",
+        "BaseUrl": "https://tfs.vlm.be/tfs"
+      },
+      "Copilot": {
+        "Model": "gpt-5",
+        "GitHubToken": "PAT",
+        "CliPath": null
+      },
+      "Review": {
+        "MaxFiles": 20,
+        "MaxFileSizeBytes": 20000,
+        "ReviewCooldownMinutes": 30,
+        "AllowedEvents": [
+          "git.pullrequest.created",
+          "git.pullrequest.updated"
+        ],
+        "TargetReviewer": null
+      },
+      "Webhook": {
+        "Token": null,
+        "TokenHeaderName": "X-Webhook-Token"
+      }
+    } 
+  }
+}
