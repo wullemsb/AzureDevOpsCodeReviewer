@@ -27,6 +27,7 @@ public sealed class PullRequestReviewOrchestratorIntegrationTests
 
     private const string DefaultRepoId = "repo-abc";
     private const string DefaultTargetReviewer = "copilot-reviewer@example.com";
+    private const string DefaultProjectKey = "Framework en Tooling";
 
 
     /// <summary>
@@ -36,13 +37,16 @@ public sealed class PullRequestReviewOrchestratorIntegrationTests
     /// </summary>
     private PullRequestReviewOrchestrator BuildOrchestrator(
         AzureDevOpsOptions? adoOptions = null,
-        ReviewOptions? reviewOptions = null)
+        ReviewOptions? reviewOptions = null,
+        string projectKey = DefaultProjectKey)
     {
         var configuration = new ConfigurationBuilder()
             .SetBasePath(AppContext.BaseDirectory)
             .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
              .AddJsonFile("secrets.json", optional: true, reloadOnChange: true)
             .Build();
+
+        var projectSection = configuration.GetSection($"Projects:{projectKey}");
 
         var services = new ServiceCollection();
 
@@ -53,12 +57,14 @@ public sealed class PullRequestReviewOrchestratorIntegrationTests
         if (adoOptions is not null)
             services.AddSingleton<IOptions<AzureDevOpsOptions>>(Options.Create(adoOptions));
         else
-            services.Configure<AzureDevOpsOptions>(configuration.GetSection("AzureDevOps"));
+            services.Configure<AzureDevOpsOptions>(projectSection.GetSection("AzureDevOps"));
 
         if (reviewOptions is not null)
             services.AddSingleton<IOptions<ReviewOptions>>(Options.Create(reviewOptions));
         else
-            services.Configure<ReviewOptions>(configuration.GetSection("Review"));
+            services.Configure<ReviewOptions>(projectSection.GetSection("Review"));
+
+        services.Configure<CopilotOptions>(projectSection.GetSection("Copilot"));
 
         services.AddSingleton<PullRequestReviewOrchestrator>();
 
