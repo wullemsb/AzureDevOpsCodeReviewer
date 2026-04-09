@@ -10,21 +10,27 @@
     <div class="row g-3">
         <div class="col-md-6">
             <label asp-for="AzureDevOps.Organization" class="form-label">Organization</label>
-            <input asp-for="AzureDevOps.Organization" class="form-control" placeholder="e.g. DefaultCollection" />
+            <input asp-for="AzureDevOps.Organization" class="form-control" placeholder="e.g. DefaultCollection" value="@Model?.AzureDevOps?.Organization" />
             <span asp-validation-for="AzureDevOps.Organization" class="text-danger"></span>
         </div>
         <div class="col-md-6">
+            <label asp-for="AzureDevOps.ProjectName" class="form-label">Project Name</label>
+            <input asp-for="AzureDevOps.ProjectName" class="form-control" placeholder="e.g. MyProject" value="@Model?.AzureDevOps?.ProjectName" />
+            <span asp-validation-for="AzureDevOps.ProjectName" class="text-danger"></span>
+            <small class="text-muted">Used to register the service hook automatically.</small>
+        </div>
+        <div class="col-md-6">
             <label asp-for="AzureDevOps.RepositoryId" class="form-label">Repository ID</label>
-            <input asp-for="AzureDevOps.RepositoryId" class="form-control" placeholder="e.g. my-repo-guid" />
+            <input asp-for="AzureDevOps.RepositoryId" class="form-control" placeholder="e.g. my-repo-guid" value="@Model?.AzureDevOps?.RepositoryId" />
             <span asp-validation-for="AzureDevOps.RepositoryId" class="text-danger"></span>
         </div>
         <div class="col-md-6">
             <label asp-for="AzureDevOps.BaseUrl" class="form-label">Base URL</label>
-            <input asp-for="AzureDevOps.BaseUrl" class="form-control" placeholder="https://dev.azure.com" />
+            <input asp-for="AzureDevOps.BaseUrl" class="form-control" placeholder="https://dev.azure.com" value="@Model?.AzureDevOps?.BaseUrl" />
         </div>
         <div class="col-md-6">
             <label asp-for="AzureDevOps.Pat" class="form-label">Personal Access Token</label>
-            <input asp-for="AzureDevOps.Pat" type="password" class="form-control" placeholder="PAT" />
+            <input asp-for="AzureDevOps.Pat" type="password" class="form-control" placeholder="PAT" value="@Model?.AzureDevOps?.Pat" />
         </div>
     </div>
 </div>
@@ -40,15 +46,15 @@
     <div class="row g-3">
         <div class="col-md-4">
             <label asp-for="Copilot.Model" class="form-label">Model</label>
-            <input asp-for="Copilot.Model" class="form-control" placeholder="gpt-5" />
+            <input asp-for="Copilot.Model" class="form-control" placeholder="gpt-5" value="@Model?.Copilot?.Model" />
         </div>
         <div class="col-md-4">
             <label asp-for="Copilot.GitHubToken" class="form-label">GitHub Token</label>
-            <input asp-for="Copilot.GitHubToken" type="password" class="form-control" placeholder="github_pat_..." />
+            <input asp-for="Copilot.GitHubToken" type="password" class="form-control" placeholder="github_pat_..." value="@Model?.Copilot?.GitHubToken" />
         </div>
         <div class="col-md-4">
             <label asp-for="Copilot.CliPath" class="form-label">CLI Path</label>
-            <input asp-for="Copilot.CliPath" class="form-control" placeholder="(optional)" />
+            <input asp-for="Copilot.CliPath" class="form-control" placeholder="(optional)" value="@Model?.Copilot?.CliPath" />
         </div>
     </div>
 </div>
@@ -63,26 +69,19 @@
     <div class="row g-3">
         <div class="col-md-4">
             <label asp-for="Review.MaxFiles" class="form-label">Max Files</label>
-            <input asp-for="Review.MaxFiles" type="number" class="form-control" />
+            <input asp-for="Review.MaxFiles" type="number" class="form-control" value="@Model?.Review?.MaxFiles" />
         </div>
         <div class="col-md-4">
             <label asp-for="Review.MaxFileSizeBytes" class="form-label">Max File Size (bytes)</label>
-            <input asp-for="Review.MaxFileSizeBytes" type="number" class="form-control" />
+            <input asp-for="Review.MaxFileSizeBytes" type="number" class="form-control" value="@Model?.Review?.MaxFileSizeBytes" />
         </div>
         <div class="col-md-4">
             <label asp-for="Review.ReviewCooldownMinutes" class="form-label">Cooldown (minutes)</label>
-            <input asp-for="Review.ReviewCooldownMinutes" type="number" class="form-control" />
+            <input asp-for="Review.ReviewCooldownMinutes" type="number" class="form-control" value="@Model?.Review?.ReviewCooldownMinutes" />
         </div>
         <div class="col-md-6">
             <label asp-for="Review.TargetReviewer" class="form-label">Target Reviewer</label>
-            <input asp-for="Review.TargetReviewer" class="form-control" placeholder="e.g. domain\\user" />
-        </div>
-        <div class="col-md-6">
-            <label class="form-label">Allowed Events</label>
-            <input name="AllowedEventsText" class="form-control"
-                   value="@(string.Join(", ", Model?.Review?.AllowedEvents ?? Array.Empty<string>()))"
-                   placeholder="git.pullrequest.created, git.pullrequest.updated" />
-            <small class="text-muted">Comma-separated list of event types</small>
+            <input asp-for="Review.TargetReviewer" class="form-control" placeholder="e.g. domain\\user" value="@Model?.Review?.TargetReviewer" />
         </div>
     </div>
 </div>
@@ -98,11 +97,11 @@
     <div class="row g-3">
         <div class="col-md-6">
             <label asp-for="Webhook.Token" class="form-label">Token</label>
-            <input asp-for="Webhook.Token" type="password" class="form-control" placeholder="Shared secret" />
+            <input asp-for="Webhook.Token" type="password" class="form-control" placeholder="Shared secret" value="@Model?.Webhook?.Token" />
         </div>
         <div class="col-md-6">
             <label asp-for="Webhook.TokenHeaderName" class="form-label">Token Header Name</label>
-            <input asp-for="Webhook.TokenHeaderName" class="form-control" placeholder="X-Webhook-Token" />
+            <input asp-for="Webhook.TokenHeaderName" class="form-control" placeholder="X-Webhook-Token" value="@Model?.Webhook?.TokenHeaderName" />
         </div>
     </div>
 </div>

@@ -3,13 +3,14 @@
     "test": {
       "AzureDevOps": {
         "Organization": "DefaultCollection",
+        "ProjectName": null,
         "RepositoryId": "SOFACore",
-        "Pat": "PAT",
+        "Pat": "test",
         "BaseUrl": "https://tfs.vlm.be/tfs"
       },
       "Copilot": {
         "Model": "gpt-5",
-        "GitHubToken": "PAT",
+        "GitHubToken": null,
         "CliPath": null
       },
       "Review": {
@@ -23,9 +24,9 @@
         "TargetReviewer": null
       },
       "Webhook": {
-        "Token": null,
+        "Token": "test",
         "TokenHeaderName": "X-Webhook-Token"
       }
-    } 
+    }
   }
 }

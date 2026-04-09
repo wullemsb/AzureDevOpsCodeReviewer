@@ -2,6 +2,7 @@ using AzureDevOpsCodeReviewer.Config;
 using AzureDevOpsCodeReviewer.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Logging;
 
 namespace AzureDevOpsCodeReviewer.Pages.Projects;
 
@@ -9,11 +10,13 @@ public class CreateModel : PageModel
 {
     private readonly IProjectConfigStore _store;
     private readonly ProjectRegistry _registry;
+    private readonly ILogger<CreateModel> _logger;
 
-    public CreateModel(IProjectConfigStore store, ProjectRegistry registry)
+    public CreateModel(IProjectConfigStore store, ProjectRegistry registry, ILogger<CreateModel> logger)
     {
         _store = store;
         _registry = registry;
+        _logger = logger;
     }
 
     [BindProperty]
@@ -46,6 +49,20 @@ public class CreateModel : PageModel
         Options.Review.AllowedEvents = ParseAllowedEvents(AllowedEventsText);
         _store.Save(ProjectKey, Options);
         await _registry.ReloadAsync(_store);
+
+        if (_registry.TryGetProject(ProjectKey, out var container))
+        {
+            try
+            {
+                var webhookUrl = $"{Request.Scheme}://{Request.Host}/webhook/{ProjectKey}";
+                await container.RegisterServiceHooksAsync(webhookUrl, HttpContext.RequestAborted);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to register service hooks for project {ProjectKey}.", ProjectKey);
+                TempData["Warning"] = "Project created, but service hook registration failed. Configure it manually in Azure DevOps.";
+            }
+        }
 
         TempData["Success"] = $"Project \"{ProjectKey}\" created successfully.";
         return RedirectToPage("Index");
