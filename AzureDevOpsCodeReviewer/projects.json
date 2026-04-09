@@ -3,9 +3,9 @@
     "test": {
       "AzureDevOps": {
         "Organization": "DefaultCollection",
-        "ProjectName": null,
+        "ProjectName": "Framework en Tooling",
         "RepositoryId": "SOFACore",
-        "Pat": "test",
+        "Pat": "b6l4ybfdsrxkp25ilqucaopzswbqynvyxevkb3rzd6snpu5xbyyq",
         "BaseUrl": "https://tfs.vlm.be/tfs"
       },
       "Copilot": {

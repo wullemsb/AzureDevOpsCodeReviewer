@@ -55,6 +55,34 @@ public class EditModel : PageModel
         return RedirectToPage("Index");
     }
 
+    public async Task<IActionResult> OnPostRecreateServiceHooksAsync()
+    {
+        if (!_store.ContainsKey(Key))
+        {
+            TempData["Error"] = $"Project \"{Key}\" not found.";
+            return RedirectToPage();
+        }
+
+        if (!_registry.TryGetProject(Key, out var projectContainer))
+        {
+            TempData["Error"] = $"Project \"{Key}\" is not currently loaded.";
+            return RedirectToPage();
+        }
+
+        try
+        {
+            var webhookUrl = $"{Request.Scheme}://{Request.Host}/webhook/{Key}";
+            await projectContainer.RegisterServiceHooksAsync(webhookUrl, CancellationToken.None);
+            TempData["Success"] = $"Service hooks for project \"{Key}\" have been recreated successfully.";
+        }
+        catch (Exception ex)
+        {
+            TempData["Error"] = $"Failed to recreate service hooks: {ex.Message}";
+        }
+
+        return RedirectToPage();
+    }
+
     private static string[] ParseAllowedEvents(string? text) =>
         (text ?? string.Empty)
             .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
