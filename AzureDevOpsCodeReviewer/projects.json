@@ -24,7 +24,7 @@
         "TargetReviewer": null
       },
       "Webhook": {
-        "Token": "test",
+        "Token": null,
         "TokenHeaderName": "X-Webhook-Token"
       }
     }
