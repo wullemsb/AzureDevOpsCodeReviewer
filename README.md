@@ -1,3 +1,5 @@
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/wullemsb/AzureDevOpsCodeReviewer)
+
 # Azure DevOps Copilot Reviewer
 
 This console app listens for Azure DevOps pull request webhook events, detects when a target reviewer is assigned, asks GitHub Copilot to review the changed files, and posts a summary comment back to the PR.
