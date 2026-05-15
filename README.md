@@ -4,6 +4,8 @@
 
 This console app listens for Azure DevOps pull request webhook events, detects when a target reviewer is assigned, asks GitHub Copilot to review the changed files, and posts a summary comment back to the PR.
 
+![Oracle](oracle.png)
+
 ## Prerequisites
 
 - .NET 8 SDK
